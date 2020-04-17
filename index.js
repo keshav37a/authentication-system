@@ -2,10 +2,13 @@ const port = 8000;
 const path = require('path');
 const express = require('express');
 const app = express();
+const cookieParser = require('cookie-parser');
 const mongoose = require('./config/mongoose');
 
 //To parse form body
 app.use(express.urlencoded());
+
+app.use(cookieParser());
 
 //Setting up view engine and views property
 app.set('view engine', 'ejs');

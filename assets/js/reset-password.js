@@ -1,0 +1,1 @@
+console.log('reset-password-script called');

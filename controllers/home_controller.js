@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const ResetUser = require('../models/reset_user');
 const cryptoObj = require('../config/crypto-js');
 
 
@@ -60,7 +61,6 @@ module.exports.createUser = async function (req, res) {
 
 module.exports.createSession = async function(req, res){
     console.log(req.body);
-
     let email = req.body.email;
     let password = req.body.password;
 
@@ -99,4 +99,54 @@ module.exports.createSession = async function(req, res){
     catch(err){
         console.log(`error: ${err}`);
     }
+}
+
+module.exports.destroySession = function(req, res){
+    console.log('Inside home_controller.destroySession');
+    console.log('in logout: ', req.cookies);
+    delete req.cookies['user_id'];
+    return res.redirect('/');
+}
+
+module.exports.forgotPassword = async function(req, res){
+    console.log('Inside home_controller.forgotPassword');
+    return res.render('forgot-password.ejs');
+}
+
+module.exports.ForgotPasswordRequest = async function(req, res){
+    console.log('Inside home_controller.forgotPasswordRequest');
+    console.log(req.body);
+    let email = req.body.email;
+    try{
+        let user = await User.findOne({email:email});
+        if(user){
+            console.log('user found');
+            let randomString = Math.random().toString(36).substring(2, 15) + 
+                               Math.random().toString(36).substring(2, 15);
+
+            let resetUrl = `http://localhost:8000/reset-password/?token=${randomString}`;
+            console.log(resetUrl);
+            
+            return res.redirect('/');
+        }
+        else{
+            console.log('User not found');
+            res.redirect('/');
+        }
+    }
+    catch(err){
+        console.log(`error: ${err}`);
+    }
+}
+
+module.exports.resetPassword = function(req, res){
+    console.log('Inside home_controller.resetPassword');
+    console.log(req.query);
+    return res.render('reset-password.ejs');
+}
+
+module.exports.resetPasswordRequest = function(req, res){
+    console.log('Inside home_controller.resetPasswordRequest');
+    console.log(req.body);
+
 }
