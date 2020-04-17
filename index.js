@@ -4,11 +4,13 @@ const express = require('express');
 const app = express();
 const cookieParser = require('cookie-parser');
 const db = require('./config/mongoose');
-const session = require('express-session');
 
 //passport
 const passport = require('passport');
 const passportLocal = require('./config/passport-local-strategy');
+const session = require('express-session');
+
+const MongoStore = require('connect-mongo')(session);
 
 //For setting up flash messages
 const flash = require('connect-flash');
@@ -28,17 +30,26 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(session({
     name: 'authentication-system',
+    //TODO- change the secret before deployment in production mode
     secret: 'its-over-9000',
     saveUninitialized: false,
     resave: false,
-    cookie:{
-        maxAge: 1000*60*10
-    }
+    cookie: {
+        maxAge: (1000*60*100)
+    },
+    store: new MongoStore({
+        mongooseConnection:db,
+        autoRemove: 'disabled'
+    },
+    function(err){
+        console.log(err || 'connect-mongodb session cookie db storage successfully setup');
+    })
 }));
 
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(passport.setAuthenticatedUser);
 
 //Setting up routes
 app.use('/', require('./routes/index'));
