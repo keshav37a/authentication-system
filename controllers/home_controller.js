@@ -3,6 +3,7 @@ const ResetUser = require('../models/reset_user');
 const cryptoObj = require('../config/crypto-js');
 const moment = require('moment');
 const resetPasswordMailer = require('../mailers/reset_password_mailer');
+const verifyEmailMailer = require('../mailers/verify_email_mailer');
 
 
 module.exports.home = async function(req, res){
@@ -36,17 +37,26 @@ module.exports.createUser = async function (req, res) {
         //If user entry is not found on the db by email then add the user in the db
         if (!user) {
 
+            //encrypting the password using AES
             let encrObj = cryptoObj.encrypt(req.body.password);
-            // let decrObj = cryptoObj.decrypt(encrObj.toString());
 
-            console.log('encrypt', encrObj);
-            // console.log('decrypt', decrObj);
+            let token = Math.random().toString(36).substring(2, 15) + 
+                               Math.random().toString(36).substring(2, 15);
+
+            let verifyUrl = `http://localhost:8000/verify/?token=${token}`;
+            console.log(verifyUrl);
+
+            verifyEmailMailer.verifyEmail({user: req.body}, {link:verifyUrl});
+
+            req.body.isVerified = false;
+            req.body.signUpToken = token;
 
             req.body.password = encrObj.toString();
             let createdUser = await User.create(req.body);
             if (createdUser) {
                 // req.flash('success', 'User created');
-                return res.redirect('/users/signin');
+                console.log(createdUser);
+                return res.redirect('/sign-in');
             }
         }
         else {
@@ -62,42 +72,65 @@ module.exports.createUser = async function (req, res) {
     }
 }
 
+module.exports.verifyEmail = async function(req, res){
+    console.log('Inside home_controller.verifyEmail');
+    console.log(req.query);
+    try{
+        let user = await User.findOne({signUpToken: req.query.token});
+        if(user){
+            user.isVerified = true;
+            console.log('User Verified');
+            await user.save();
+            return res.redirect('/');
+        }
+        else{
+            return res.send('<h1>Invalid Token</h1>');
+        }
+    }
+    catch(err){
+        console.log(err);
+    }
+}
+
 module.exports.createSession = async function(req, res){
     console.log(req.body);
     let email = req.body.email;
     let password = req.body.password;
 
-    // console.log(`Entered details in login form: username: ${userName}  password: ${password}`);
     // To check if user is present in the db or not
-
     try{
         let user = await User.findOne({email:email});
 
         if(user){
             console.log('User found in create session');
-            let decryptPassword = cryptoObj.decrypt(user.password);
 
-            //If the password is correct then redirect to home page
-            if(password===decryptPassword){
-                console.log('Sign In Successful');
-                res.cookie('user_id', user._id);
-                console.log('cookies ', req.cookies);
-                return res.render('home.ejs');
+            if(user.isVerified!=true){
+                return res.send('<h3>You need to verify your account first before you can sign in</h3>');
             }
 
-            //Handle Incorrect password
             else{
-                console.log('Incorrect Password');
-                return res.redirect('back');
-            }      
-        }
+                let decryptPassword = cryptoObj.decrypt(user.password);
 
-        //Handle wrong username / new user trying to login
+                //If the password is correct then redirect to home page
+                if(password===decryptPassword){
+                    console.log('Sign In Successful');
+                    res.cookie('user_id', user._id);
+                    console.log('cookies ', req.cookies);
+                    return res.render('home.ejs');
+                }
+
+                //Handle Incorrect password
+                else{
+                    console.log('Incorrect Password');
+                    return res.redirect('back');
+                }      
+            }
+            
+        }
         else{
-            console.log('Username/Email doesnt exist');
+            console.log('User does not exist');
             return res.redirect('back');
         }
-
     }
     catch(err){
         console.log(`error: ${err}`);
@@ -232,3 +265,4 @@ module.exports.resetPasswordRequest = async function(req, res){
         return res.redirect('/');
     }   
 }
+

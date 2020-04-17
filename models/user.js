@@ -14,9 +14,14 @@ const userSchema = new mongoose.Schema({
         type:String,
         required: true
     },
-    avatar:{
-        type:String,
+    isVerified:{
+        type:Boolean,
+        required: true
     },
+    signUpToken:{
+        type: String,
+        required: true
+    }
 }, {
     timestamps : true
 });

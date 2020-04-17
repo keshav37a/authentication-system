@@ -19,4 +19,6 @@ router.get('/reset-password', homeController.resetPassword);
 
 router.post('/reset-password-request', homeController.resetPasswordRequest);
 
+router.get('/verify', homeController.verifyEmail);
+
 module.exports = router;
