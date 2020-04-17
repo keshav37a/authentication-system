@@ -9,13 +9,14 @@
             <form action="/create-session" method="POST" id="sign-in-form" class="flex col center-al">
                 <img id="welcome-img" src="/images/mr-bean.png" alt="welcome">
                 <div class="welcome-txt mar1">Welcome Bare Mortal</div>
-                <input type="email" placeholder="Username or Email" name="email" class="input-initial mar1 pad1" required>
-                <input type="password" placeholder="Password" name="password" class="input-initial mar1 pad1" required>
+                <input id="username" type="email" placeholder="Username or Email" name="email" class="input-initial mar1 pad1" required>
+                <input id="password" type="password" placeholder="Password" name="password" class="input-initial mar1 pad1" required>
                 <div id="check-sign-in-container" class="flex row start">
                     <input id="check-sign-in" type="checkbox" name="signed-in" class="mar-pad-0">
                     <div class="link-desc">Keep Me Signed In</div>
                     <a href="" class="link-appearance">Reset Password</a>
                 </div>
+
                 <button id="btn-sign-in" type="submit" class="mar1 width90 pad1">Open Sesame</button>
                 <div class="flex row start mb1">
                     <div class="link-desc">New To Our Website?</div>
@@ -25,3 +26,5 @@
         </div>
     </div>
 </main>
+
+

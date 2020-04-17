@@ -10,6 +10,8 @@ router.post('/create-user', homeController.createUser);
 router.post('/create-session', passport.authenticate('local', {failureRedirect: '/sign-in'},) ,homeController.createSession);
 router.get('/sign-out', homeController.destroySession);
 
+router.use('/api', require('./api'));
+
 //To render the forgot password page
 router.get('/forgot-password', homeController.forgotPassword);
 
