@@ -5,7 +5,6 @@ const moment = require('moment');
 const resetPasswordMailer = require('../mailers/reset_password_mailer');
 const verifyEmailMailer = require('../mailers/verify_email_mailer');
 
-
 module.exports.home = async function(req, res){
     console.log('Inside home_controller.home');
     return res.render('home.ejs');
@@ -56,12 +55,16 @@ module.exports.createUser = async function (req, res) {
             if (createdUser) {
                 // req.flash('success', 'User created');
                 console.log(createdUser);
+
+                req.flash('success', 'User created');   
+
                 return res.redirect('/sign-in');
+
             }
         }
         else {
             console.log('User already exists');
-            // req.flash('error', 'User already exists');
+            req.flash('error', 'User already exists');
             return res.redirect('back');
         }
     }
@@ -93,54 +96,15 @@ module.exports.verifyEmail = async function(req, res){
 }
 
 module.exports.createSession = async function(req, res){
-    console.log(req.body);
-    let email = req.body.email;
-    let password = req.body.password;
-
-    // To check if user is present in the db or not
-    try{
-        let user = await User.findOne({email:email});
-
-        if(user){
-            console.log('User found in create session');
-
-            if(user.isVerified!=true){
-                return res.send('<h3>You need to verify your account first before you can sign in</h3>');
-            }
-
-            else{
-                let decryptPassword = cryptoObj.decrypt(user.password);
-
-                //If the password is correct then redirect to home page
-                if(password===decryptPassword){
-                    console.log('Sign In Successful');
-                    res.cookie('user_id', user._id);
-                    console.log('cookies ', req.cookies);
-                    return res.render('home.ejs');
-                }
-
-                //Handle Incorrect password
-                else{
-                    console.log('Incorrect Password');
-                    return res.redirect('back');
-                }      
-            }
-            
-        }
-        else{
-            console.log('User does not exist');
-            return res.redirect('back');
-        }
-    }
-    catch(err){
-        console.log(`error: ${err}`);
-    }
+    console.log('Inside home_controller.createSession');
+    console.log(req.user);
+    return res.redirect('/');
 }
 
 module.exports.destroySession = function(req, res){
     console.log('Inside home_controller.destroySession');
-    console.log('in logout: ', req.cookies);
-    delete req.cookies['user_id'];
+    req.logout();
+    console.log(req.user);
     return res.redirect('/');
 }
 

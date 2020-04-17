@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const homeController = require('../controllers/home_controller');
+const passport = require('passport');
 
 router.get('/', homeController.home);
 router.get('/sign-in', homeController.signIn);
 router.get('/sign-up', homeController.signUp);
 router.post('/create-user', homeController.createUser);
-router.post('/create-session', homeController.createSession);
+router.post('/create-session', passport.authenticate('local', {failureRedirect: '/sign-in'},) ,homeController.createSession);
 router.get('/sign-out', homeController.destroySession);
 
 //To render the forgot password page
