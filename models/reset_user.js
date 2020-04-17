@@ -3,13 +3,16 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     user:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user'
+        ref: 'user',
+        required: true
     },
     token:{
         type: String,
+        required: true
     },
-    Validity:{
-        type: Date
+    validity:{
+        type: Number,
+        required: true
     }
 }, {
     timestamps : true

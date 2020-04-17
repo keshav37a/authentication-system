@@ -1,6 +1,8 @@
 const User = require('../models/user');
 const ResetUser = require('../models/reset_user');
 const cryptoObj = require('../config/crypto-js');
+const moment = require('moment');
+
 
 
 module.exports.home = async function(req, res){
@@ -22,12 +24,6 @@ module.exports.createUser = async function (req, res) {
     console.log('Inside home_controller.createUser');
     console.log(req.body);
 
-    let encrObj = cryptoObj.encrypt(req.body.password);
-    // let decrObj = cryptoObj.decrypt(encrObj.toString());
-
-    console.log('encrypt', encrObj);
-    // console.log('decrypt', decrObj);
-
     //If password and confirm password fields dont match then return
     if (req.body.password != req.body.confirmPassword) {
         console.log("Passwords do not match");
@@ -39,6 +35,13 @@ module.exports.createUser = async function (req, res) {
 
         //If user entry is not found on the db by email then add the user in the db
         if (!user) {
+
+            let encrObj = cryptoObj.encrypt(req.body.password);
+            // let decrObj = cryptoObj.decrypt(encrObj.toString());
+
+            console.log('encrypt', encrObj);
+            // console.log('decrypt', decrObj);
+
             req.body.password = encrObj.toString();
             let createdUser = await User.create(req.body);
             if (createdUser) {
@@ -71,7 +74,7 @@ module.exports.createSession = async function(req, res){
         let user = await User.findOne({email:email});
 
         if(user){
-            console.log('User found');
+            console.log('User found in create session');
             let decryptPassword = cryptoObj.decrypt(user.password);
 
             //If the password is correct then redirect to home page
@@ -113,20 +116,43 @@ module.exports.forgotPassword = async function(req, res){
     return res.render('forgot-password.ejs');
 }
 
-module.exports.ForgotPasswordRequest = async function(req, res){
+module.exports.forgotPasswordRequest = async function(req, res){
     console.log('Inside home_controller.forgotPasswordRequest');
-    console.log(req.body);
     let email = req.body.email;
     try{
         let user = await User.findOne({email:email});
         if(user){
-            console.log('user found');
+            let userId = user._id;
+            console.log('user found in forgot password request');
             let randomString = Math.random().toString(36).substring(2, 15) + 
                                Math.random().toString(36).substring(2, 15);
 
             let resetUrl = `http://localhost:8000/reset-password/?token=${randomString}`;
             console.log(resetUrl);
-            
+
+            let validity = moment.now();
+            // console.log(validity);
+            validity = validity + 600000;
+            // console.log(validity);
+
+            //First check if it already exists or not
+            let resetUser = await ResetUser.findOne({user: userId});
+
+            if(resetUser){
+                console.log('resetUser found');
+                resetUser.validity = validity;
+                resetUser.token = randomString;
+                (await resetUser).save();
+            }
+            else{
+                console.log('new resetUser found');
+                resetUser = await ResetUser.create({
+                    user: user._id, 
+                    token: randomString,
+                    validity: validity      
+                });
+            }
+            // console.log(resetUser);
             return res.redirect('/');
         }
         else{
@@ -139,14 +165,67 @@ module.exports.ForgotPasswordRequest = async function(req, res){
     }
 }
 
-module.exports.resetPassword = function(req, res){
+module.exports.resetPassword = async function(req, res){
     console.log('Inside home_controller.resetPassword');
-    console.log(req.query);
-    return res.render('reset-password.ejs');
+
+    let stringToken = req.query.token;
+    
+
+    let resetUser = await ResetUser.findOne({token: stringToken}).populate('user');
+
+    if(resetUser){
+        console.log('user found in reset password');
+        // console.log(resetUser);
+        let currentTime = moment.now();
+        let validity = resetUser.validity;
+        let difference = validity-currentTime;
+
+        console.log(currentTime);
+        console.log(validity);
+        console.log(difference);
+
+        if(difference<=0){
+            return res.send('<h1>Password reset window expired</h1>')
+        }
+        else{
+            let userId = resetUser.user._id;
+            console.log('checking:', userId);
+            res.render('reset-password', {
+                'title': 'title',
+                'userId': userId.toString()
+            });
+        }
+    }
+    else{
+        return res.send('<h1>Unauthorized</h1>');
+    }
+    
 }
 
-module.exports.resetPasswordRequest = function(req, res){
+module.exports.resetPasswordRequest = async function(req, res){
     console.log('Inside home_controller.resetPasswordRequest');
-    console.log(req.body);
+    console.log('checking in final if it worked', req.body);
 
+    let userId = req.body.userId;
+    console.log('userId in resetPasswordRequest ', userId);
+
+    let password = req.body.password;
+    let repeatPassword = req.body.repeatPassword;
+    if(password==repeatPassword){
+        let user = await User.findById(userId);
+        if(user){
+            let encrObj = cryptoObj.encrypt(password);           
+            user.password = encrObj.toString();
+            await user.save();
+            console.log('user password changed');
+            return res.redirect('/');
+        }
+        else{
+            return res.send('<h1>User Not Found</h1>')
+        }
+    }
+    else{
+        console.log('Passwords dont match');
+        return res.redirect('/');
+    }   
 }

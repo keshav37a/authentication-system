@@ -13,10 +13,10 @@ router.get('/sign-out', homeController.destroySession);
 router.get('/forgot-password', homeController.forgotPassword);
 
 //To make the forgot password request by posting the email address
-router.post('/forgot-password-request', homeController.ForgotPasswordRequest);
+router.post('/forgot-password-request', homeController.forgotPasswordRequest);
 
 router.get('/reset-password', homeController.resetPassword);
 
-router.get('/reset-password-request', homeController.resetPasswordRequest);
+router.post('/reset-password-request', homeController.resetPasswordRequest);
 
 module.exports = router;
