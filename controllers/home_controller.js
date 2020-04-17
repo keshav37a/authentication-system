@@ -58,3 +58,45 @@ module.exports.createUser = async function (req, res) {
     }
 }
 
+module.exports.createSession = async function(req, res){
+    console.log(req.body);
+
+    let email = req.body.email;
+    let password = req.body.password;
+
+    // console.log(`Entered details in login form: username: ${userName}  password: ${password}`);
+    // To check if user is present in the db or not
+
+    try{
+        let user = await User.findOne({email:email});
+
+        if(user){
+            console.log('User found');
+            let decryptPassword = cryptoObj.decrypt(user.password);
+
+            //If the password is correct then redirect to home page
+            if(password===decryptPassword){
+                console.log('Sign In Successful');
+                res.cookie('user_id', user._id);
+                console.log('cookies ', req.cookies);
+                return res.render('home.ejs');
+            }
+
+            //Handle Incorrect password
+            else{
+                console.log('Incorrect Password');
+                return res.redirect('back');
+            }      
+        }
+
+        //Handle wrong username / new user trying to login
+        else{
+            console.log('Username/Email doesnt exist');
+            return res.redirect('back');
+        }
+
+    }
+    catch(err){
+        console.log(`error: ${err}`);
+    }
+}
