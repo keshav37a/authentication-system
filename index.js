@@ -4,6 +4,9 @@ const express = require('express');
 const app = express();
 const mongoose = require('./config/mongoose');
 
+//To parse form body
+app.use(express.urlencoded());
+
 //Setting up view engine and views property
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
