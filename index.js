@@ -4,12 +4,15 @@ const express = require('express');
 const app = express();
 const mongoose = require('./config/mongoose');
 
+//Setting up view engine and views property
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.get('/', function(req, res){
-    res.render('home');
-})
+// To use static files in our app
+app.use(express.static('./assets'));
+
+//Setting up routes
+app.use('/', require('./routes/index'));
 
 app.listen(port, function(err){
     if(err){console.log(`error in running app on local-host- ${err}`);}
