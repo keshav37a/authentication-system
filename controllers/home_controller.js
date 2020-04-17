@@ -2,7 +2,7 @@ const User = require('../models/user');
 const ResetUser = require('../models/reset_user');
 const cryptoObj = require('../config/crypto-js');
 const moment = require('moment');
-
+const resetPasswordMailer = require('../mailers/reset_password_mailer');
 
 
 module.exports.home = async function(req, res){
@@ -128,6 +128,9 @@ module.exports.forgotPasswordRequest = async function(req, res){
                                Math.random().toString(36).substring(2, 15);
 
             let resetUrl = `http://localhost:8000/reset-password/?token=${randomString}`;
+            //Sending the new comment to the mailer
+            resetPasswordMailer.resetPassword({user: user}, {link: resetUrl});
+
             console.log(resetUrl);
 
             let validity = moment.now();
