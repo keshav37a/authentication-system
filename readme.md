@@ -30,11 +30,10 @@ For-ex: cd <directory-path>
 3. Type npm <package-name> 
 4. Press enter
 5. Repeat this for all the packages
-6. After Installing all the packages type npm start in the terminal and press enter.
+6. Go to the nodemailer.js file in the config folder and give your own credentials otherwise the mailing service    wont work 
+6. After the above steps type npm start in the terminal and press enter.
 7. The project will start on localhost with port 8000.
 8. Open browser and type localhost:8000
-
-
 
 Built With
 NodeJS 
@@ -45,4 +44,4 @@ Author
 Keshav Mathur
 
 Acknowledgments
-Hats Off to Arpan Garg, Manisha Khattar, Parikh Jain and Ankush Singhla and all the coding ninjas faculty 
+Hats Off to Arpan Garg, Manisha Khattar, Parikh Jain, Ankush Singhla and all the coding ninjas faculty 
