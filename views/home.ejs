@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+    <link rel="stylesheet" href="/css/home.css">
     <title>Home</title>
 </head>
 <body>
-    <h1>Yoo Hoo. First ejs File</h1>
+    <h1>Home</h1>
+
+    <div class="flex row center">
     <% 
         if(!locals.user) 
         {%>
-            <div><a href="/sign-up">Sign Up</a></div>
-            <div><a href="/sign-in">Sign In</a></div>
-            <div><a href="/forgot-password">Forgot Password</a></div>
+            <div class="single-div"><a href="/sign-up">Sign Up</a></div>
+            <div class="single-div"><a href="/sign-in">Sign In</a></div>
+            <div class="single-div"><a href="/forgot-password">Forgot Password</a></div>
         <%} 
         else 
         {%>  
             <div><a href="/sign-out">Sign Out</a></div>        
         <%} 
     %>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
 </body>

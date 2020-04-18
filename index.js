@@ -13,13 +13,10 @@ const session = require('express-session');
 
 const MongoStore = require('connect-mongo')(session);
 
-//For setting up flash messages
-// const flash = require('connect-flash');
-// const customMiddleware = require('./config/middleware');
-
 //To parse form body
 app.use(express.urlencoded());
 
+//To parse cookie data
 app.use(cookieParser());
 
 // To use static files in our app
@@ -54,9 +51,6 @@ app.use(passport.setAuthenticatedUser);
 
 //Setting up routes
 app.use('/', require('./routes/index'));
-
-// app.use(flash());
-// app.use(customMiddleware.setFlash);
 
 app.listen(port, function(err){
     if(err){console.log(`error in running app on local-host- ${err}`);}
