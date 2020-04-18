@@ -3,7 +3,7 @@ const nodeMailer = require('../config/nodemailer');
 //exporting the reset password function
 exports.resetPassword = (user, link)=>{    
     console.log('Reset password mailer called');
-    //We have already defined the previous part of the path in nodemailer.js
+    
     let htmlString = nodeMailer.renderedTemplate({name: user.user.name, link:link.link}, 'passwords/reset-password.ejs');
     nodeMailer.transporter.sendMail({
         from : 'keshav37a@gmail.com',

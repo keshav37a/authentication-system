@@ -3,6 +3,7 @@ const ResetUser = require('../../../models/reset_user');
 const jwt = require('jsonwebtoken');
 const cryptoObj = require('../../../config/crypto-js');
 
+//Retrieving the list of all users
 module.exports.index = async function(req, res){
     console.log('home_api.index called');
     try{
@@ -22,6 +23,7 @@ module.exports.index = async function(req, res){
     
 }
 
+//Sign in a particular user using jwt
 module.exports.signIn = async function(req, res){
     try{
         let user = await User.findOne({email: req.body.email});
@@ -50,6 +52,3 @@ module.exports.signIn = async function(req, res){
     }
 }
 
-module.exports.signOut = function(req, res){
-    
-}

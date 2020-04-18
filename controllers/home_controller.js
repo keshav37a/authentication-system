@@ -10,16 +10,19 @@ module.exports.home = async function(req, res){
     return res.render('home.ejs');
 }
 
+//Rendering the signin page
 module.exports.signIn = async function(req, res){
     console.log('Inside home_controller.signIn');
     return res.render('sign-in.ejs');
 }
 
+//Rendering the signup page
 module.exports.signUp = async function(req, res){
     console.log('Inside home_controller.signUp');
     return res.render('sign-up.ejs');
 }
 
+//To create new user after submitting the signup form
 module.exports.createUser = async function (req, res) {
     console.log('Inside home_controller.createUser');
     console.log(req.body);
@@ -43,42 +46,36 @@ module.exports.createUser = async function (req, res) {
                                Math.random().toString(36).substring(2, 15);
 
             let verifyUrl = `http://localhost:8000/verify/?token=${token}`;
-            console.log(verifyUrl);
 
+            //Passing the user and email verification link to the mailer
             verifyEmailMailer.verifyEmail({user: req.body}, {link:verifyUrl});
 
             req.body.isVerified = false;
             req.body.signUpToken = token;
-
             req.body.password = encrObj.toString();
+
             let createdUser = await User.create(req.body);
             if (createdUser) {
-                // req.flash('success', 'User created');
-                console.log(createdUser);
-
-                req.flash('success', 'User created');   
-
                 return res.redirect('/sign-in');
-
             }
         }
         else {
             console.log('User already exists');
-            req.flash('error', 'User already exists');
             return res.redirect('back');
         }
     }
     catch (err) {
-        // req.flash('error', err);
         console.log(`${err}`);
         return res.redirect('back');
     }
 }
 
+//To verify a user by sending a verification link to his/her email
 module.exports.verifyEmail = async function(req, res){
     console.log('Inside home_controller.verifyEmail');
     console.log(req.query);
     try{
+        //If the signup token matches with the query then user is verifies
         let user = await User.findOne({signUpToken: req.query.token});
         if(user){
             user.isVerified = true;
@@ -95,12 +92,14 @@ module.exports.verifyEmail = async function(req, res){
     }
 }
 
+//After getting verified using passport-local library create session is called
 module.exports.createSession = async function(req, res){
     console.log('Inside home_controller.createSession');
     console.log(req.user);
     return res.redirect('/');
 }
 
+//Sign-out
 module.exports.destroySession = function(req, res){
     console.log('Inside home_controller.destroySession');
     req.logout();
@@ -108,15 +107,19 @@ module.exports.destroySession = function(req, res){
     return res.redirect('/');
 }
 
+//Rendering the forgot password page 
 module.exports.forgotPassword = async function(req, res){
     console.log('Inside home_controller.forgotPassword');
     return res.render('forgot-password.ejs');
 }
 
+//Called when submitting the email form in the forgot password page
 module.exports.forgotPasswordRequest = async function(req, res){
     console.log('Inside home_controller.forgotPasswordRequest');
     let email = req.body.email;
     try{
+
+        //If the email of that particular user is found in db 
         let user = await User.findOne({email:email});
         if(user){
             let userId = user._id;
@@ -125,15 +128,13 @@ module.exports.forgotPasswordRequest = async function(req, res){
                                Math.random().toString(36).substring(2, 15);
 
             let resetUrl = `http://localhost:8000/reset-password/?token=${randomString}`;
-            //Sending the new comment to the mailer
+
+            //Sending the reset password link to the mailer
             resetPasswordMailer.resetPassword({user: user}, {link: resetUrl});
-
-            console.log(resetUrl);
-
             let validity = moment.now();
-            // console.log(validity);
+
+            //Adding a validity of 10 minutes to this token
             validity = validity + 600000;
-            // console.log(validity);
 
             //First check if it already exists or not
             let resetUser = await ResetUser.findOne({user: userId});
@@ -165,17 +166,15 @@ module.exports.forgotPasswordRequest = async function(req, res){
     }
 }
 
+//After token verification Reset password page containing the form which would change the password of the user
 module.exports.resetPassword = async function(req, res){
     console.log('Inside home_controller.resetPassword');
 
     let stringToken = req.query.token;
-    
-
     let resetUser = await ResetUser.findOne({token: stringToken}).populate('user');
 
     if(resetUser){
         console.log('user found in reset password');
-        // console.log(resetUser);
         let currentTime = moment.now();
         let validity = resetUser.validity;
         let difference = validity-currentTime;
@@ -184,6 +183,7 @@ module.exports.resetPassword = async function(req, res){
         console.log(validity);
         console.log(difference);
 
+        //If the currentTime exceeds the validity period then we dont render the form
         if(difference<=0){
             return res.send('<h1>Password reset window expired</h1>')
         }
@@ -196,24 +196,26 @@ module.exports.resetPassword = async function(req, res){
             });
         }
     }
+    //If no user is found by that token
     else{
         return res.send('<h1>Unauthorized</h1>');
     }
     
 }
 
+//After submitting the new password form
 module.exports.resetPasswordRequest = async function(req, res){
     console.log('Inside home_controller.resetPasswordRequest');
-    console.log('checking in final if it worked', req.body);
 
     let userId = req.body.userId;
-    console.log('userId in resetPasswordRequest ', userId);
-
     let password = req.body.password;
     let repeatPassword = req.body.repeatPassword;
+
+    //If passwords are equal
     if(password==repeatPassword){
         let user = await User.findById(userId);
         if(user){
+            //Encrypt the new password and save it in the user's current password
             let encrObj = cryptoObj.encrypt(password);           
             user.password = encrObj.toString();
             await user.save();

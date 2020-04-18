@@ -1,3 +1,4 @@
+//A package used to encrypt and decrypt using known algos like AES
 const CryptoJS = require("crypto-js");
 
 const secretKey = "the-game-is-on";
